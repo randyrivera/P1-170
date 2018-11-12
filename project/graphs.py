@@ -13,14 +13,6 @@ def makeOuter(k):
     S = nx.complete_graph(k)
     return S
 
-def treeEdge(g1, n1, g2, n2):
-    g1.add_nodes_from(g2)
-    g1.add_edges_from(g2.edges)
-    g1.add_edge(n1, n2)
-    print('g1, n1 connected to g2, n2')
-    return g1
-
-
 def makeComplete(input_size):
     if input_size == 'small':
         k = 5
@@ -40,5 +32,6 @@ def makeComplete(input_size):
         center.add_edges_from(outer.edges)
         center.add_edge(i, adder + (i * k))
         adder += k
+
     nx.relabel(center, lambda x: str(x), False)
     return center
