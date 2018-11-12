@@ -9,7 +9,8 @@ num_buses = 0
 size_bus = 0 
 constraints = []
 total_capacity = 0
-disjoint_sets = {}
+bus_index = 0
+disjoint_sets = []
 nodes_groups = {} #the rowdy groups each node belongs to
 
 def parse_input(folder_name):
@@ -64,11 +65,116 @@ def set_global_scope(folder_name):
 	nodes = list(G.nodes())
 	i = 0
 	while i < num_buses:
-		key_string = "bus#" + str(i)
-		print(nodes[i])
-		nodes_groups[nodes[i]] = get_rowdy(str(i))
-		disjoint_sets[key_string] = []
+		disjoint_sets.append([])
 		i += 1
+
+def get_max_node(Graph):
+	''' 
+		Finds node with highest degree
+		*** probably have to handle case when returnin empty list
+	''' 
+	if (len(Graph.nodes()) > 0):
+		highest_degree = Graph.nodes()[0]
+		for node in Graph.nodes():
+			if G.degree(node) > G.degree(highest_degree):
+				highest_degree = node
+		return highest_degree
+	return None
+
+def get_min_adj(adj_node_lst):
+	''' 
+		Finds node adjacent node with lowest degree
+		*** probably have to handle case when returnin empty list
+	''' 
+	if (len(adj_node_lst) > 0):
+		lowest_degree = adj_node_lst[0]
+		for node in adj_node_lst:
+			if len(G.edges(node)) < len(G.edges(lowest_degree)):
+				lowest_degree = node
+		return lowest_degree
+	return None	
+
+def get_adjacent(current_node):
+	''' 
+		return string list of all adjacent vertices
+		!!!works!!!
+	'''
+
+	return_vertices = []
+	for edge in G.edges(current_node):
+			if edge[0] == str(current_node):
+				return_vertices.append(str(edge[1]))
+			else:
+				return_vertices.append(str(edge[0]))
+	return return_vertices
+
+def finisher():
+	global G
+	while(len(G.nodes()) > 0):
+		current_node = G.nodes()[0]
+		G.remove_node(current_node)
+		for bus in disjoint_sets:
+			if len(bus) < size_bus:
+				bus.append(current_node)
+				break
+
+def	algo():
+	global G #, adjacent_nodes
+	current_node = get_max_node(G)
+	adjacent_nodes = get_adjacent(current_node)
+	adjacent_to_iter = adjacent_nodes
+	current_min = get_min_adj(adjacent_to_iter)
+
+	i = 0
+	print("initial nodes: ", G.nodes(), "\n")
+	print("size of bus is ", size_bus, "\n")
+	while(len(G.nodes()) > 0 and i < num_buses): 
+		while (len(adjacent_to_iter) > 0) and (len(disjoint_sets[i]) < size_bus - 1):
+
+			print("current min adj: ", current_min)
+
+			disjoint_sets[i].append(current_min)
+			adjacent_to_iter.remove(current_min)
+			current_min = get_min_adj(adjacent_to_iter)
+
+		print("current max node: ", current_node)
+		disjoint_sets[i].append(current_node)
+
+		print("to be removed: ", disjoint_sets[i], "\n")
+
+		for node in disjoint_sets[i]:
+			G.remove_node(node)
+
+		print("all nodes in G: ", G.nodes(), "\n")
+	
+		current_node = get_max_node(G)
+		adjacent_nodes = get_adjacent(current_node)
+		adjacent_to_iter = adjacent_nodes
+		current_min = get_min_adj(adjacent_to_iter)		
+		i += 1
+
+	### break into seperate function that finishes matching leftover nodes
+	
+	[print("bus contains: ", bus) for bus in disjoint_sets]
+	print("Nodes left: ", G.nodes(), "\n")
+	finisher()
+	print("Nodes left: ", G.nodes())
+	[print("bus contains: ", bus) for bus in disjoint_sets]
+		
+
+set_global_scope("./inputs/small")
+
+def write_solution(file_name):
+	file = open("./outputs/" + file_name + ".out", "w")
+
+	for bus in disjoint_sets:
+		if len(bus) > 0:
+			group = "["
+			for node in bus:
+				group += "'" + node + "', "
+			file.write(group[:-2] + "]" + "\n")
+
+
 
 def check_status():
 
