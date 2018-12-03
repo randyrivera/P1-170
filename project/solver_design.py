@@ -40,6 +40,31 @@ def parse_input(folder_name):
 
     return graph, num_buses, size_bus, constraints
 
+def set_global_scope(folder_name):
+	'''  
+		Sets all global variables
+	'''
+	global G, num_buses, size_bus, constraints, total_capacity, disjoint_sets
+
+	G, num_buses, size_bus, constraints = parse_input(folder_name) #creates the graph and contraints
+
+	total_capacity = num_buses * size_bus
+	nodes = list(G.nodes())
+	i = 0
+	while i < num_buses:
+		disjoint_sets.append([])
+		i += 1
+
+def clear_scope():
+	global G, num_buses, size_bus, constraints, total_capacity, disjoint_sets
+
+	G.clear()
+	num_buses = 0
+	size_buses = 0
+	constraints = []
+	total_capacity = 0
+	disjoint_sets = []
+
 def get_rowdy(node):
 	'''
 		Takes a node and returns a list of all the rowdy groups that contain it 
@@ -55,18 +80,6 @@ def get_rowdy(node):
 			rowdy_groups.append(constraint)
 	return rowdy_groups
 
-def set_global_scope(folder_name):
-	''' 
-		Sets all global variables
-	'''
-	global G, num_buses, size_bus, constraints, total_capacity, disjoint_sets
-	G, num_buses, size_bus, constraints = parse_input(folder_name)
-	total_capacity = num_buses * size_bus
-	nodes = list(G.nodes())
-	i = 0
-	while i < num_buses:
-		disjoint_sets.append([])
-		i += 1
 
 def get_max_node(Graph):
 	''' 
@@ -143,7 +156,8 @@ def	algo():
 		print("to be removed: ", disjoint_sets[i], "\n")
 
 		for node in disjoint_sets[i]:
-			G.remove_node(node)
+			if G.has_node(node):
+				G.remove_node(node)
 
 		print("all nodes in G: ", G.nodes(), "\n")
 	
@@ -159,10 +173,9 @@ def	algo():
 	print("Nodes left: ", G.nodes(), "\n")
 	finisher()
 	print("Nodes left: ", G.nodes())
-	[print("bus contains: ", bus) for bus in disjoint_sets]
-		
+	[print("bus contains: ", bus) for bus in disjoint_sets]	
 
-set_global_scope("./inputs/small")
+#set_global_scope("./inputs/medium")
 
 def write_solution(file_name):
 	file = open("./outputs/" + file_name + ".out", "w")
@@ -174,7 +187,24 @@ def write_solution(file_name):
 				group += "'" + node + "', "
 			file.write(group[:-2] + "]" + "\n")
 
+def iterate_files(filename):
 
+	if filename == "large":
+		i = 1000
+		end = 1099
+	else:
+		i = 1
+		end = 331
+
+	while i <= end:
+		try:
+			set_global_scope("./all_inputs/" + filename + "/" + str(i))
+			algo()
+			write_solution(filename + "/" + str(i))
+			clear_scope()
+		except:
+			print('\n' + "missing file: " + filename + "/" + str(i))
+		i += 1
 
 def check_status():
 
